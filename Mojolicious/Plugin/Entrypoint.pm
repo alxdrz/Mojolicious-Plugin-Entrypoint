@@ -32,6 +32,8 @@ sub register
 		
 		undef $entrypoint if $entrypoint eq $placeholder; # Prevent recursion
 		
+		undef $entrypoint if $entrypoint =~ /^_/;
+
 		{
 			no strict 'refs';
 			
