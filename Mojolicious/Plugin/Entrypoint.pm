@@ -9,17 +9,18 @@ sub register
 	
 	my $controller = $app->controller_class;
 	
-	my $action = $conf->{action};
+	my $placeholder = $conf->{placeholder};
 	
-	unless($action)
+	$placeholder = 'entrypoint' unless $placeholder;
+	
+	if($app->routes->is_reserved($placeholder))
 	{
-		$action = 'entrypoint';
+		die "Test::Plugin::Entrypoint: placeholder '$placeholder' is reserved\n";
 	}
+	
+	# Do nothing if subroutine is defined	
 
-	if($controller->can($action))
-	{
-		return;
-	}
+	return if $controller->can($placeholder);
 	
 	my $sub = sub
 	{
@@ -27,9 +28,9 @@ sub register
 		
 		my $pkg  = ref $self;
 		
-		my $entrypoint = $self->stash($action);
-
-		undef $entrypoint if $entrypoint eq $action; # Prevent recursion
+		my $entrypoint = $self->stash($placeholder);
+		
+		undef $entrypoint if $entrypoint eq $placeholder; # Prevent recursion
 		
 		{
 			no strict 'refs';
@@ -37,6 +38,8 @@ sub register
 			no warnings;
 			
 			my $code = $pkg . '::' . $entrypoint;
+			
+			# Check if subroutine from self package 			
 			
 			unless(defined(*{$code}{CODE}))
 			{
@@ -49,9 +52,10 @@ sub register
 	
 	{ no strict 'refs';
 	
-		*{ "${controller}::${action}" } = $sub;
+		*{ "${controller}::${placeholder}" } = $sub;
 	}
 }
 
 
 1;
+
