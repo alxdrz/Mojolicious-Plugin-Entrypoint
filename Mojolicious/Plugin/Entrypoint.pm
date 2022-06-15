@@ -32,7 +32,7 @@ sub register
 		
 		undef $entrypoint if $entrypoint eq $placeholder; # Prevent recursion
 		
-		undef $entrypoint if $entrypoint =~ /^_/;
+		undef $entrypoint if $entrypoint =~ /^_/;         # Skip private methods
 
 		{
 			no strict 'refs';
